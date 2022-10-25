@@ -1,20 +1,34 @@
-import React, { forwardRef, useState } from "react";
+import React, { forwardRef, useRef, useState, useEffect } from "react";
 
 import { data as emojiList } from "./../emojiPicker/Data";
 import EmojiButton from "./EmojiButton";
 import EmojiSearch from "./EmojiSearch";
+
+import styles from "./emojiPicker.module.scss";
 
 export function EmojiPicker(props, inputRef) {
   // estados
   const [isOpen, setIsOpen] = useState(false);
   const [emojis, setEmojis] = useState([...emojiList]);
 
+  const containerRef = useRef(null);
+
+  //actualizamos el componente si es que el click no está en el componente padre
+  useEffect(() => {
+    window.addEventListener("click", (e) => {
+      if (!containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+        setEmojis(emojiList);
+      }
+    });
+  }, []);
+
   const handleClickOpen = () => {
     setIsOpen(!isOpen);
   };
 
   const handleSearch = (e) => {
-    const q = e;
+    const q = e.target.value;
 
     if (!!q) {
       const search = emojiList.filter((emoji) => {
@@ -24,9 +38,9 @@ export function EmojiPicker(props, inputRef) {
         );
       });
 
-      setEmojis(search);
+      setEmojis([...search]);
     } else {
-      setEmojis(emojiList);
+      setEmojis([...emojiList]);
     }
   };
 
@@ -57,14 +71,16 @@ export function EmojiPicker(props, inputRef) {
   };
 
   return (
-    <div>
-      <button onClick={handleClickOpen}>😀</button>
+    <div ref={containerRef} className={styles.inputContainer}>
+      <button onClick={handleClickOpen} className={styles.emojiPickerButton}>
+        😀
+      </button>
 
       {/* valido si está abierto */}
       {isOpen ? (
-        <div>
+        <div className={styles.emojiPickerContainer}>
           <EmojiSearch onSearch={handleSearch} />
-          <div>
+          <div className={styles.emojisList}>
             {emojis.map((emoji) => (
               <EmojiButton
                 key={emoji.symbol}
